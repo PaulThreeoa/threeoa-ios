@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="educational-file-storage" default="deploy" basedir=".">
+	<property environment="env" /> 
+	<property name="warFileName" value="${ant.project.name}.war" />
+	<property name="webroot.dir" location="WebRoot" />
+	<property name="lib.dir" location="${webroot.dir}/WEB-INF/lib" />
+	<property name="webxml.dir" location="${webroot.dir}/WEB-INF/web.xml" />
+	<property name="src.dir" location="src" />
+	<property name="dist.dir" location="dist" />
+	<property name="classpath" location="build" />
+	<property name="classes.dir" location="${webroot.dir}/WEB-INF/classes" />
+	<property name="jboss.lib.dir" value="${env.JBOSS_HOME}/modules/system/layers/base/javax/" />
+	
+	<!-- 定义路径，编译java文件时用到的jar包。 -->
+	<path id="classpath" description="jar files path">
+		<fileset dir="${jboss.lib.dir}">
+            <include name="**/*.jar"/>  
+        </fileset>
+		<fileset dir="${lib.dir}">
+            <include name="**/*.jar"/>  
+        </fileset>
+	</path>
+	<description>Compiles and deploy ${ant.project.name}.</description>
+	
+	<target name="clean">
+		<delete dir="${classes.dir}" />
+		<delete dir="${dist.dir}" />
+	</target>
+	
+	<target name="init" depends="clean">
+		<mkdir dir="${classes.dir}" />
+		<mkdir dir="${dist.dir}" />
+	</target>
+	
+	<target name="compile" depends="init" description="Compile the source code.">
+		<javac srcdir="${src.dir}" destdir="${classes.dir}" encoding="UTF-8" includeantruntime="false">
+            <classpath refid="classpath" />
+        </javac>
+        <copy todir="${classes.dir}">
+            <!-- src下的xml文件 -->
+            <fileset dir="${src.dir}">
+                <include name="*.xml" />
+                <include name="*.properties" />
+            </fileset>
+        </copy>
+	</target>
+      
+    <!-- 定义默认任务，将class文件集合成jar包。 -->  
+    <target name="deploy" depends="compile">  
+        <!-- 删除原有war包。 -->
+        <delete dir="${dist.dir}/${warFileName}" />
+        <!-- 建立新war包。 -->  
+        <mkdir dir="${dist.dir}/${warFileName}" />
+        <copy todir="${dist.dir}/${warFileName}/" failonerror="false">
+        	<!-- 将非jar和非class文件拷贝到war包的对应路径下。 -->  
+            <fileset dir="${webroot.dir}">
+                <include name="**/**.*" />
+            </fileset>
+        </copy>
+    </target>
+</project>
